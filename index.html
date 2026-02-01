@@ -715,7 +715,12 @@
 
                     <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
                     
-                    <button class="difficulty-btn" style="margin-top: 15px; width: 100%; max-width: 300px;" onclick="showCalendar()">📅 Seasonal Calendar</button>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+                        <button class="difficulty-btn" onclick="showCalendar()">📅 Seasonal Calendar</button>
+                        <button class="difficulty-btn" onclick="showStudyMode()">📚 Study Guide</button>
+                    </div>
+                    
+                    <p style="color: #666; font-size: 0.8rem; margin-top: 15px;">Keyboard: 1-4 to answer, Enter for next, Esc for menu</p>
                     
                     ${highScores.length > 0 ? `
                         <div style="margin-top: 30px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
@@ -903,6 +908,15 @@
             }
             questionsAnswered++;
 
+            // Play sound
+            if (survivalMode && ateFatal) {
+                playSound('death');
+            } else if (isCorrect) {
+                playSound('correct');
+            } else {
+                playSound('wrong');
+            }
+
             // Check for survival mode death
             if (survivalMode && ateFatal) {
                 gameOver = true;
@@ -996,6 +1010,170 @@
                     </div>
 
                     <button class="play-again-btn" onclick="renderStartScreen()">Hunt Again 🍄</button>
+                </div>
+            `;
+        }
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            // Number keys for answering (1-4)
+            if (document.querySelector('.choices') && !document.querySelector('.choice-btn:disabled')) {
+                const keyMap = { '1': 'edible', '2': 'poisonous', '3': 'deadly', '4': 'medicinal' };
+                if (keyMap[e.key]) {
+                    checkAnswer(keyMap[e.key]);
+                }
+            }
+            // Enter/Space for next question
+            if ((e.key === 'Enter' || e.key === ' ') && document.querySelector('.next-btn')) {
+                document.querySelector('.next-btn').click();
+            }
+            // Escape to go back
+            if (e.key === 'Escape') {
+                renderStartScreen();
+            }
+        });
+
+        // Simple sound effects using Web Audio
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'correct') {
+                oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+            } else if (type === 'wrong') {
+                oscillator.frequency.setValueAtTime(311.13, audioContext.currentTime); // Eb4
+                oscillator.frequency.setValueAtTime(233.08, audioContext.currentTime + 0.15); // Bb3
+            } else if (type === 'death') {
+                oscillator.frequency.setValueAtTime(196, audioContext.currentTime); // G3
+                oscillator.frequency.setValueAtTime(146.83, audioContext.currentTime + 0.2); // D3
+                oscillator.frequency.setValueAtTime(110, audioContext.currentTime + 0.4); // A2
+            }
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Study Mode
+        function showStudyMode() {
+            const edible = mushrooms.filter(m => m.answer === 'edible');
+            const poisonous = mushrooms.filter(m => m.answer === 'poisonous');
+            const deadly = mushrooms.filter(m => m.answer === 'deadly');
+            const medicinal = mushrooms.filter(m => m.answer === 'medicinal');
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">📚 Study Guide</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 25px;">Learn all ${mushrooms.length} Michigan mushrooms</p>
+                    
+                    <div style="display: grid; gap: 20px;">
+                        <div>
+                            <h3 style="color: #76b852; margin-bottom: 10px;">✅ Edible (${edible.length})</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                                ${edible.map(m => `
+                                    <div style="background: rgba(76,175,80,0.1); padding: 10px; border-radius: 8px; cursor: pointer;" onclick="showMushroomDetail('${m.name}')">
+                                        <div style="font-size: 2rem; text-align: center;">${m.emoji}</div>
+                                        <div style="text-align: center; font-size: 0.9rem;">${m.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 style="color: #ff9800; margin-bottom: 10px;">☠️ Poisonous (${poisonous.length})</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                                ${poisonous.map(m => `
+                                    <div style="background: rgba(255,152,0,0.1); padding: 10px; border-radius: 8px; cursor: pointer;" onclick="showMushroomDetail('${m.name}')">
+                                        <div style="font-size: 2rem; text-align: center;">${m.emoji}</div>
+                                        <div style="text-align: center; font-size: 0.9rem;">${m.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 style="color: #f44336; margin-bottom: 10px;">💀 Deadly (${deadly.length})</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                                ${deadly.map(m => `
+                                    <div style="background: rgba(244,67,54,0.1); padding: 10px; border-radius: 8px; cursor: pointer;" onclick="showMushroomDetail('${m.name}')">
+                                        <div style="font-size: 2rem; text-align: center;">${m.emoji}</div>
+                                        <div style="text-align: center; font-size: 0.9rem;">${m.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 style="color: #9c27b0; margin-bottom: 10px;">💊 Medicinal Only (${medicinal.length})</h3>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                                ${medicinal.map(m => `
+                                    <div style="background: rgba(156,39,176,0.1); padding: 10px; border-radius: 8px; cursor: pointer;" onclick="showMushroomDetail('${m.name}')">
+                                        <div style="font-size: 2rem; text-align: center;">${m.emoji}</div>
+                                        <div style="text-align: center; font-size: 0.9rem;">${m.name}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button class="next-btn" onclick="renderStartScreen()">← Back to Game</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showMushroomDetail(name) {
+            const m = mushrooms.find(m => m.name === name);
+            if (!m) return;
+            
+            const categoryColors = {
+                'edible': '#76b852',
+                'poisonous': '#ff9800',
+                'deadly': '#f44336',
+                'medicinal': '#9c27b0'
+            };
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 6rem; margin-bottom: 10px;">${m.emoji}</div>
+                        <h2>${m.name}</h2>
+                        <p style="font-style: italic; color: #888;">${m.scientific}</p>
+                        <span style="display: inline-block; padding: 5px 15px; border-radius: 20px; margin-top: 10px; background: ${categoryColors[m.answer]}33; color: ${categoryColors[m.answer]}; font-weight: bold;">
+                            ${m.answer.toUpperCase()}
+                        </span>
+                    </div>
+                    
+                    <div style="max-width: 600px; margin: 0 auto;">
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #76b852; margin-bottom: 8px;">🔍 Appearance</h4>
+                            <p style="color: #ccc; line-height: 1.6;">${m.appearance}</p>
+                        </div>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <h4 style="color: #76b852; margin-bottom: 8px;">📍 Habitat & Season</h4>
+                            <p style="color: #ccc; line-height: 1.6;">${m.habitat}</p>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px;">
+                            <h4 style="color: #76b852; margin-bottom: 8px;">🍄 Forager's Note</h4>
+                            <p style="color: #ccc; line-height: 1.6;">${m.funFact}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button class="difficulty-btn" onclick="showStudyMode()">← All Mushrooms</button>
+                        <button class="next-btn" style="margin-left: 10px;" onclick="renderStartScreen()">Play Game</button>
+                    </div>
                 </div>
             `;
         }
