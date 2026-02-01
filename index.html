@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍄 Mushroom Hunter - Michigan Foraging Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #e8e8e8;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #76b852, #8dc26f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #76b852;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .game-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .mushroom-display {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .mushroom-emoji {
+            font-size: 8rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .mushroom-name {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .mushroom-scientific {
+            font-style: italic;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .mushroom-description {
+            color: #aaa;
+            line-height: 1.6;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .question {
+            text-align: center;
+            font-size: 1.3rem;
+            margin: 25px 0;
+            color: #ddd;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .choice-btn {
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .choice-btn:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-2px);
+        }
+
+        .choice-btn.correct {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: #4caf50;
+            animation: pulse-green 0.5s ease;
+        }
+
+        .choice-btn.wrong {
+            background: rgba(244, 67, 54, 0.3);
+            border-color: #f44336;
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes pulse-green {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .result-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .result-card.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card.correct {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+        }
+
+        .result-card.wrong {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+        }
+
+        .result-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .fun-fact {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .fun-fact h4 {
+            color: #76b852;
+            margin-bottom: 8px;
+        }
+
+        .next-btn {
+            margin-top: 20px;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            background: linear-gradient(90deg, #76b852, #8dc26f);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .next-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(118, 184, 82, 0.4);
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .game-over h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #76b852, #8dc26f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .final-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #76b852;
+            margin: 20px 0;
+        }
+
+        .grade {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+        }
+
+        .grade-title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .play-again-btn {
+            padding: 18px 50px;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, #76b852, #8dc26f);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 25px rgba(118, 184, 82, 0.5);
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 50px 20px;
+        }
+
+        .start-screen h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+
+        .start-screen p {
+            color: #aaa;
+            margin-bottom: 30px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        .difficulty-select {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .difficulty-btn {
+            padding: 12px 25px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn.active {
+            background: rgba(118, 184, 82, 0.3);
+            border-color: #76b852;
+        }
+
+        .difficulty-btn:hover {
+            border-color: rgba(255,255,255,0.5);
+        }
+
+        .warning-box {
+            background: rgba(255, 152, 0, 0.2);
+            border: 1px solid rgba(255, 152, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .warning-box h4 {
+            color: #ff9800;
+            margin-bottom: 5px;
+        }
+
+        .warning-box p {
+            color: #ddd;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #76b852, #8dc26f);
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.8rem; }
+            .mushroom-emoji { font-size: 5rem; }
+            .choices { grid-template-columns: 1fr; }
+            .stats-bar { flex-wrap: wrap; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍄 Mushroom Hunter</h1>
+            <p>Michigan Foraging Identification Game</p>
+        </header>
+
+        <div id="app"></div>
+    </div>
+
+    <script>
+        // Michigan Mushroom Database
+        const mushrooms = [
+            {
+                name: "Morel",
+                scientific: "Morchella esculenta",
+                emoji: "🍄",
+                appearance: "Honeycomb-like cap with ridges and pits, hollow inside, cream to dark brown color",
+                habitat: "Found near dying elm, ash, and apple trees in spring (April-May)",
+                answer: "edible",
+                funFact: "Morels are Michigan's most prized wild mushroom! They can sell for $30-50 per pound. The key to finding them: look near dead or dying elm and ash trees after a warm spring rain when soil temps hit 50°F.",
+                difficulty: 1
+            },
+            {
+                name: "Destroying Angel",
+                scientific: "Amanita bisporigera",
+                emoji: "🍄",
+                appearance: "Pure white cap and stem, with a skirt-like ring and bulbous base with a cup (volva)",
+                habitat: "Hardwood and mixed forests, summer through fall",
+                answer: "deadly",
+                funFact: "One of the deadliest mushrooms in North America! Contains amatoxins that cause liver failure. Just half a cap can be lethal. It's responsible for 90% of mushroom-related deaths. NEVER eat an all-white mushroom without expert identification!",
+                difficulty: 1
+            },
+            {
+                name: "Chicken of the Woods",
+                scientific: "Laetiporus sulphureus",
+                emoji: "🍄",
+                appearance: "Bright orange and yellow shelf fungus, grows in overlapping clusters on trees",
+                habitat: "On dead or dying oak, cherry, and other hardwoods",
+                answer: "edible",
+                funFact: "Named for its chicken-like texture when cooked! Best when young and tender. In Michigan, look for it from late summer through fall on oak trees. Some people are sensitive to it, so try a small amount first.",
+                difficulty: 1
+            },
+            {
+                name: "Jack O'Lantern",
+                scientific: "Omphalotus olearius",
+                emoji: "🍄",
+                appearance: "Bright orange, grows in clusters at base of trees, gills glow faintly in the dark",
+                habitat: "At the base of hardwood trees and stumps, late summer to fall",
+                answer: "poisonous",
+                funFact: "Often mistaken for edible Chanterelles! Key differences: Jack O'Lanterns grow in clusters on wood, have true gills, and actually glow in the dark (bioluminescence). Chanterelles grow from soil and have false gills. Causes severe GI distress but isn't deadly.",
+                difficulty: 2
+            },
+            {
+                name: "Giant Puffball",
+                scientific: "Calvatia gigantea",
+                emoji: "⚪",
+                appearance: "Large white ball, can grow to soccer-ball size or larger, no stem, smooth surface",
+                habitat: "Meadows, pastures, and open woods, late summer to fall",
+                answer: "edible",
+                funFact: "A single giant puffball can contain 7 TRILLION spores! Edible only when interior is pure white - if it's yellow or brown, it's past prime. Slice it like bread and fry in butter. Some specimens in Michigan have been found weighing over 40 pounds!",
+                difficulty: 1
+            },
+            {
+                name: "False Morel",
+                scientific: "Gyromitra esculenta",
+                emoji: "🍄",
+                appearance: "Brain-like, wrinkled cap (not honeycomb), reddish-brown, stem is chambered not hollow",
+                habitat: "Sandy soils near conifers, early spring",
+                answer: "poisonous",
+                funFact: "Contains gyromitrin which converts to toxic monomethylhydrazine (rocket fuel!) in your body. While some people eat them after special preparation, it's caused deaths. The key difference from true morels: brain-like wrinkles vs honeycomb pits, and chambered vs hollow stem.",
+                difficulty: 2
+            },
+            {
+                name: "Chanterelle",
+                scientific: "Cantharellus cibarius",
+                emoji: "🍄",
+                appearance: "Golden yellow, funnel-shaped with wavy edges, false gills (ridges), fruity apricot smell",
+                habitat: "Near oaks and conifers in moss, summer through fall",
+                answer: "edible",
+                funFact: "Chanterelles have a distinctive apricot-like aroma! They form mycorrhizal relationships with trees and can't be cultivated commercially. In Michigan, look in oak forests after summer rains. They're among the world's most popular wild edible mushrooms.",
+                difficulty: 2
+            },
+            {
+                name: "Fly Agaric",
+                scientific: "Amanita muscaria",
+                emoji: "🍄",
+                appearance: "Iconic red cap with white spots, white gills, white stem with ring and bulbous base",
+                habitat: "Under birch and pine trees, late summer to fall",
+                answer: "poisonous",
+                funFact: "The classic 'Mario mushroom' and fairy tale toadstool! Contains ibotenic acid and muscimol - causes delirium, not death (though still dangerous). Vikings may have used it for 'berserker' rage. It's been used in shamanic rituals for thousands of years.",
+                difficulty: 1
+            },
+            {
+                name: "Hen of the Woods",
+                scientific: "Grifola frondosa",
+                emoji: "🍄",
+                appearance: "Large cluster of grayish-brown overlapping fan-shaped caps, grows at tree bases",
+                habitat: "Base of oaks, especially old or dying trees, fall",
+                answer: "edible",
+                funFact: "Also called Maitake ('dancing mushroom' in Japanese)! Highly prized in both cooking and traditional medicine. A single cluster can weigh 50+ pounds. In Michigan, oak forests in fall are prime hunting grounds. The same spot often produces year after year!",
+                difficulty: 2
+            },
+            {
+                name: "Death Cap",
+                scientific: "Amanita phalloides",
+                emoji: "🍄",
+                appearance: "Greenish-yellow to olive cap, white gills, white stem with skirt ring and cup at base",
+                habitat: "Under oaks, introduced species becoming more common",
+                answer: "deadly",
+                funFact: "Responsible for most fatal mushroom poisonings worldwide! Symptoms don't appear for 6-12 hours, by which time liver damage is underway. There's no antidote - only liver transplant can save victims in severe cases. Originally European, now spreading in North America.",
+                difficulty: 2
+            },
+            {
+                name: "Oyster Mushroom",
+                scientific: "Pleurotus ostreatus",
+                emoji: "🍄",
+                appearance: "Fan or oyster-shaped caps, white to gray to brown, short offset stem, white gills",
+                habitat: "On dead hardwoods, especially in cooler weather, spring and fall",
+                answer: "edible",
+                funFact: "One of the easiest wild mushrooms to identify and one of the safest for beginners! They're also one of few mushrooms that are carnivorous - they trap and digest nematodes for nitrogen. Great beginner foraging mushroom in Michigan!",
+                difficulty: 1
+            },
+            {
+                name: "Lion's Mane",
+                scientific: "Hericium erinaceus",
+                emoji: "🦁",
+                appearance: "White, shaggy mass of cascading spines, no cap or gills, looks like a white pom-pom",
+                habitat: "On dead or dying hardwoods, especially beech and maple, late summer to fall",
+                answer: "edible",
+                funFact: "Looks like a white waterfall! Studies show it may support brain health and nerve regeneration. Has a seafood-like taste similar to crab or lobster. No poisonous lookalikes make this a great beginner mushroom. Increasingly rare in the wild.",
+                difficulty: 1
+            },
+            {
+                name: "Earthball",
+                scientific: "Scleroderma citrinum",
+                emoji: "🟤",
+                appearance: "Round like a puffball but with thick rubbery skin, interior is dark purple-black when cut",
+                habitat: "Woodland paths and disturbed areas, summer to fall",
+                answer: "poisonous",
+                funFact: "Often mistaken for edible puffballs! The key difference: cut it open. Puffballs should be pure white inside like marshmallow. Earthballs have dark purple-black interiors even when young. Causes severe gastrointestinal upset.",
+                difficulty: 2
+            },
+            {
+                name: "Reishi",
+                scientific: "Ganoderma lucidum",
+                emoji: "🍄",
+                appearance: "Kidney-shaped, shiny reddish-brown lacquered surface, grows as shelf on trees",
+                habitat: "On hardwoods, especially oaks and maples, year-round",
+                answer: "medicinal",
+                funFact: "The 'Mushroom of Immortality' in Chinese medicine for over 2,000 years! Too woody to eat but used to make tea or extracts. Contains compounds being studied for immune support. Michigan's forests have several Ganoderma species.",
+                difficulty: 2
+            },
+            {
+                name: "Shaggy Mane",
+                scientific: "Coprinus comatus",
+                emoji: "🍄",
+                appearance: "Tall white cylinder with shaggy scales, dissolves into black ink from bottom up when mature",
+                habitat: "Disturbed ground, lawns, paths, roadsides, spring and fall",
+                answer: "edible",
+                funFact: "Must be eaten within hours of picking - it autodigests into black ink! The 'inky cap' process is called deliquescence. Best when young before the gills turn pink. Never consume alcohol within 3 days of eating any inky cap mushrooms!",
+                difficulty: 2
+            },
+            {
+                name: "Turkey Tail",
+                scientific: "Trametes versicolor",
+                emoji: "🦃",
+                appearance: "Thin, flexible, fan-shaped brackets with colorful concentric zones like turkey feathers",
+                habitat: "On dead hardwood logs and stumps, year-round",
+                answer: "medicinal",
+                funFact: "One of the most researched medicinal mushrooms! Contains PSK, used alongside cancer treatment in Japan. Too tough to eat but great for tea. The most common bracket fungus in Michigan - you've probably walked past thousands!",
+                difficulty: 1
+            }
+        ];
+
+        // Game State
+        let currentMushroom = 0;
+        let score = 0;
+        let streak = 0;
+        let questionsAnswered = 0;
+        let shuffledMushrooms = [];
+        let selectedDifficulty = 'all';
+        let totalQuestions = 10;
+
+        // Shuffle array
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Get mushrooms based on difficulty
+        function getMushroomsByDifficulty() {
+            if (selectedDifficulty === 'all') return mushrooms;
+            return mushrooms.filter(m => m.difficulty === parseInt(selectedDifficulty));
+        }
+
+        // Render start screen
+        function renderStartScreen() {
+            document.getElementById('app').innerHTML = `
+                <div class="game-card start-screen">
+                    <h2>Welcome, Forager! 🌲</h2>
+                    <p>Test your knowledge of Michigan's wild mushrooms. Can you tell the difference between a delicious Morel and a deadly Destroying Angel?</p>
+                    
+                    <div class="warning-box">
+                        <h4>⚠️ Safety Warning</h4>
+                        <p>This game is for education only. NEVER eat wild mushrooms without expert verification. When in doubt, throw it out!</p>
+                    </div>
+
+                    <h3 style="margin: 25px 0 15px;">Select Difficulty</h3>
+                    <div class="difficulty-select">
+                        <button class="difficulty-btn ${selectedDifficulty === 'all' ? 'active' : ''}" onclick="setDifficulty('all')">All (${mushrooms.length})</button>
+                        <button class="difficulty-btn ${selectedDifficulty === '1' ? 'active' : ''}" onclick="setDifficulty('1')">Easy</button>
+                        <button class="difficulty-btn ${selectedDifficulty === '2' ? 'active' : ''}" onclick="setDifficulty('2')">Hard</button>
+                    </div>
+
+                    <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
+                </div>
+            `;
+        }
+
+        function setDifficulty(diff) {
+            selectedDifficulty = diff;
+            renderStartScreen();
+        }
+
+        // Start game
+        function startGame() {
+            const availableMushrooms = getMushroomsByDifficulty();
+            shuffledMushrooms = shuffle(availableMushrooms).slice(0, totalQuestions);
+            currentMushroom = 0;
+            score = 0;
+            streak = 0;
+            questionsAnswered = 0;
+            renderQuestion();
+        }
+
+        // Render question
+        function renderQuestion() {
+            const m = shuffledMushrooms[currentMushroom];
+            const progress = ((currentMushroom) / shuffledMushrooms.length) * 100;
+            
+            document.getElementById('app').innerHTML = `
+                <div class="stats-bar">
+                    <div class="stat">
+                        <div class="stat-value">${score}</div>
+                        <div class="stat-label">Score</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${streak}🔥</div>
+                        <div class="stat-label">Streak</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">${currentMushroom + 1}/${shuffledMushrooms.length}</div>
+                        <div class="stat-label">Question</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: ${progress}%"></div>
+                </div>
+
+                <div class="game-card">
+                    <div class="mushroom-display">
+                        <div class="mushroom-emoji">${m.emoji}</div>
+                        <div class="mushroom-name">${m.name}</div>
+                        <div class="mushroom-scientific">${m.scientific}</div>
+                        <div class="mushroom-description">
+                            <strong>Appearance:</strong> ${m.appearance}<br><br>
+                            <strong>Habitat:</strong> ${m.habitat}
+                        </div>
+                    </div>
+
+                    <div class="question">Is this mushroom safe to eat?</div>
+
+                    <div class="choices">
+                        <button class="choice-btn" onclick="checkAnswer('edible')">✅ Edible</button>
+                        <button class="choice-btn" onclick="checkAnswer('poisonous')">☠️ Poisonous</button>
+                        <button class="choice-btn" onclick="checkAnswer('deadly')">💀 Deadly</button>
+                        <button class="choice-btn" onclick="checkAnswer('medicinal')">💊 Medicinal Only</button>
+                    </div>
+
+                    <div id="result" class="result-card"></div>
+                </div>
+            `;
+        }
+
+        // Check answer
+        function checkAnswer(answer) {
+            const m = shuffledMushrooms[currentMushroom];
+            const isCorrect = answer === m.answer;
+            
+            // Disable buttons
+            document.querySelectorAll('.choice-btn').forEach(btn => {
+                btn.disabled = true;
+                if (btn.textContent.toLowerCase().includes(m.answer)) {
+                    btn.classList.add('correct');
+                } else if (btn.textContent.toLowerCase().includes(answer) && !isCorrect) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            // Update score
+            if (isCorrect) {
+                streak++;
+                score += 10 + (streak * 2); // Bonus for streak
+            } else {
+                streak = 0;
+            }
+            questionsAnswered++;
+
+            // Show result
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = `result-card show ${isCorrect ? 'correct' : 'wrong'}`;
+            resultDiv.innerHTML = `
+                <div class="result-title">${isCorrect ? '✅ Correct!' : '❌ Wrong!'}</div>
+                <p>${isCorrect ? 'Great identification!' : `This is actually ${m.answer === 'deadly' ? 'DEADLY ☠️' : m.answer}.`}</p>
+                <div class="fun-fact">
+                    <h4>🍄 Forager's Note</h4>
+                    <p>${m.funFact}</p>
+                </div>
+                <button class="next-btn" onclick="nextQuestion()">${currentMushroom < shuffledMushrooms.length - 1 ? 'Next Mushroom →' : 'See Results 🏆'}</button>
+            `;
+        }
+
+        // Next question
+        function nextQuestion() {
+            currentMushroom++;
+            if (currentMushroom >= shuffledMushrooms.length) {
+                showResults();
+            } else {
+                renderQuestion();
+            }
+        }
+
+        // Show final results
+        function showResults() {
+            const percentage = Math.round((score / (shuffledMushrooms.length * 12)) * 100);
+            let grade, gradeEmoji;
+            
+            if (percentage >= 90) {
+                grade = "Master Mycologist";
+                gradeEmoji = "🏆";
+            } else if (percentage >= 70) {
+                grade = "Expert Forager";
+                gradeEmoji = "🌟";
+            } else if (percentage >= 50) {
+                grade = "Apprentice Hunter";
+                gradeEmoji = "🍄";
+            } else if (percentage >= 30) {
+                grade = "Cautious Beginner";
+                gradeEmoji = "🌱";
+            } else {
+                grade = "Stay Out of the Woods";
+                gradeEmoji = "☠️";
+            }
+
+            document.getElementById('app').innerHTML = `
+                <div class="game-card game-over">
+                    <h2>Hunt Complete! ${gradeEmoji}</h2>
+                    <div class="final-score">${score}</div>
+                    <p style="color: #888; margin-bottom: 20px;">points</p>
+                    
+                    <div class="grade">
+                        <div class="grade-title">${grade}</div>
+                        <p style="color: #888;">${percentage}% accuracy</p>
+                    </div>
+
+                    <div class="warning-box" style="margin-bottom: 30px;">
+                        <h4>Remember!</h4>
+                        <p>When foraging in the wild: "When in doubt, throw it out!" Always consult an expert before eating wild mushrooms.</p>
+                    </div>
+
+                    <button class="play-again-btn" onclick="renderStartScreen()">Hunt Again 🍄</button>
+                </div>
+            `;
+        }
+
+        // Initialize
+        renderStartScreen();
+    </script>
+</body>
+</html>
