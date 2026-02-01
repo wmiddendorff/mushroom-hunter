@@ -536,6 +536,94 @@
                 answer: "medicinal",
                 funFact: "One of the most researched medicinal mushrooms! Contains PSK, used alongside cancer treatment in Japan. Too tough to eat but great for tea. The most common bracket fungus in Michigan - you've probably walked past thousands!",
                 difficulty: 1
+            },
+            {
+                name: "Black Trumpet",
+                scientific: "Craterellus cornucopioides",
+                emoji: "🖤",
+                appearance: "Funnel-shaped, thin-fleshed, dark gray to black, no gills, wavy edges",
+                habitat: "In moss under oaks and beeches, summer to fall",
+                answer: "edible",
+                funFact: "Called 'black gold' by foragers! Despite the ominous appearance, they're delicious with an earthy, smoky flavor. Hard to spot - they blend into leaf litter. Nicknamed 'trompette de la mort' (trumpet of death) in French, but totally safe to eat!",
+                difficulty: 2,
+                season: [7, 8, 9]
+            },
+            {
+                name: "Beefsteak Fungus",
+                scientific: "Fistulina hepatica",
+                emoji: "🥩",
+                appearance: "Thick, tongue-shaped bracket, blood-red and meaty looking, oozes red juice when cut",
+                habitat: "On oaks and chestnuts, late summer to fall",
+                answer: "edible",
+                funFact: "Looks disturbingly like raw meat - even 'bleeds' red juice! Has a sour, tangy taste due to vitamin C content. In England, it's called 'ox tongue.' The wood it grows on becomes valuable 'brown oak' prized by woodworkers!",
+                difficulty: 2,
+                season: [8, 9, 10]
+            },
+            {
+                name: "Deadly Galerina",
+                scientific: "Galerina marginata",
+                emoji: "🍄",
+                appearance: "Small brown cap, brown gills, thin stem with faint ring, grows on wood",
+                habitat: "On rotting wood, especially conifers, spring through fall",
+                answer: "deadly",
+                funFact: "Contains the same deadly amatoxins as Death Cap! Often mistaken for psychedelic Psilocybe mushrooms or edible Honey Mushrooms. Small but lethal - just a few can kill. Always check for wood substrate and do a spore print!",
+                difficulty: 2,
+                season: [4, 5, 6, 7, 8, 9, 10]
+            },
+            {
+                name: "Honey Mushroom",
+                scientific: "Armillaria mellea",
+                emoji: "🍯",
+                appearance: "Honey-brown cap, white gills, ring on stem, grows in clusters at tree bases",
+                habitat: "At base of trees and stumps, fall",
+                answer: "edible",
+                funFact: "One of the largest living organisms on Earth! A single Honey Mushroom colony in Oregon covers 2,385 acres and is estimated to be 2,400 years old. Must be cooked thoroughly - raw ones cause stomach upset. Great in stir-fries!",
+                difficulty: 2,
+                season: [9, 10, 11]
+            },
+            {
+                name: "Chaga",
+                scientific: "Inonotus obliquus",
+                emoji: "⬛",
+                appearance: "Black, burnt-looking crusty growth on birch trees, interior is orange-brown",
+                habitat: "On living birch trees, year-round",
+                answer: "medicinal",
+                funFact: "Not actually a mushroom but a sclerotia (mass of mycelium)! Used in Siberian folk medicine for centuries. Takes 5-7 years to mature. Harvesting kills the colony - please harvest sustainably! Makes a pleasant tea with vanilla notes.",
+                difficulty: 2,
+                season: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            },
+            {
+                name: "Angel Wings",
+                scientific: "Pleurocybella porrigens",
+                emoji: "👼",
+                appearance: "Pure white, thin, fan-shaped, no stem, grows in overlapping shelves on conifers",
+                habitat: "On dead conifer logs, especially hemlock, fall",
+                answer: "poisonous",
+                funFact: "Was considered edible until 2004 when 59 people in Japan were poisoned, 17 fatally! Now known to cause fatal brain damage in people with kidney problems. Looks similar to Oyster Mushrooms but grows on conifers, not hardwoods.",
+                difficulty: 2,
+                season: [9, 10, 11]
+            },
+            {
+                name: "Indigo Milk Cap",
+                scientific: "Lactarius indigo",
+                emoji: "🔵",
+                appearance: "Striking blue color, exudes blue milk when cut, fades to grayish with age",
+                habitat: "Under oaks and pines, summer to fall",
+                answer: "edible",
+                funFact: "One of the few blue foods in nature! The indigo color comes from azulene compounds. Taste is mildly peppery. Popular in Mexican and Guatemalan cuisine. When you cook it, the blue turns gray-green. Rare find in Michigan!",
+                difficulty: 2,
+                season: [7, 8, 9]
+            },
+            {
+                name: "Parasol Mushroom",
+                scientific: "Macrolepiota procera",
+                emoji: "☂️",
+                appearance: "Large (up to 12 inch cap), scaly brown cap, tall stem with moveable ring, snake-skin pattern on stem",
+                habitat: "Meadows, pastures, forest edges, summer to fall",
+                answer: "edible",
+                funFact: "One of the largest and most elegant mushrooms! Cap can be breaded and fried like a schnitzel. The moveable ring is a key ID feature. Warning: has dangerous lookalikes in the Chlorophyllum genus that cause severe illness!",
+                difficulty: 2,
+                season: [7, 8, 9, 10]
             }
         ];
 
@@ -547,6 +635,37 @@
         let shuffledMushrooms = [];
         let selectedDifficulty = 'all';
         let totalQuestions = 10;
+        let survivalMode = false;
+        let gameOver = false;
+
+        // High Scores
+        function getHighScores() {
+            const scores = localStorage.getItem('mushroomHunterScores');
+            return scores ? JSON.parse(scores) : [];
+        }
+
+        function saveHighScore(score, mode) {
+            const scores = getHighScores();
+            scores.push({ score, mode, date: new Date().toLocaleDateString() });
+            scores.sort((a, b) => b.score - a.score);
+            localStorage.setItem('mushroomHunterScores', JSON.stringify(scores.slice(0, 10)));
+        }
+
+        // Seasonal data
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        function getSeasonalMushrooms(month) {
+            const monthNum = month + 1; // JS months are 0-indexed
+            return mushrooms.filter(m => {
+                if (!m.season) {
+                    // Default seasons based on common knowledge
+                    if (m.name === 'Morel') return [4, 5].includes(monthNum);
+                    if (m.name.includes('Puffball')) return [8, 9, 10].includes(monthNum);
+                    return [5, 6, 7, 8, 9, 10].includes(monthNum); // General mushroom season
+                }
+                return m.season.includes(monthNum);
+            });
+        }
 
         // Shuffle array
         function shuffle(array) {
@@ -566,6 +685,10 @@
 
         // Render start screen
         function renderStartScreen() {
+            const highScores = getHighScores().slice(0, 5);
+            const currentMonth = new Date().getMonth();
+            const inSeason = getSeasonalMushrooms(currentMonth);
+            
             document.getElementById('app').innerHTML = `
                 <div class="game-card start-screen">
                     <h2>Welcome, Forager! 🌲</h2>
@@ -583,9 +706,109 @@
                         <button class="difficulty-btn ${selectedDifficulty === '2' ? 'active' : ''}" onclick="setDifficulty('2')">Hard</button>
                     </div>
 
+                    <h3 style="margin: 25px 0 15px;">Game Mode</h3>
+                    <div class="difficulty-select">
+                        <button class="difficulty-btn ${!survivalMode ? 'active' : ''}" onclick="setSurvivalMode(false)">🎮 Normal</button>
+                        <button class="difficulty-btn ${survivalMode ? 'active' : ''}" onclick="setSurvivalMode(true)">☠️ Survival</button>
+                    </div>
+                    ${survivalMode ? '<p style="color: #ff6b6b; font-size: 0.9rem; margin-top: 10px;">Survival: Misidentify a DEADLY mushroom = Game Over!</p>' : ''}
+
                     <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
+                    
+                    <button class="difficulty-btn" style="margin-top: 15px; width: 100%; max-width: 300px;" onclick="showCalendar()">📅 Seasonal Calendar</button>
+                    
+                    ${highScores.length > 0 ? `
+                        <div style="margin-top: 30px; text-align: left; max-width: 400px; margin-left: auto; margin-right: auto;">
+                            <h4 style="color: #76b852; margin-bottom: 10px;">🏆 High Scores</h4>
+                            <table style="width: 100%; font-size: 0.9rem;">
+                                ${highScores.map((s, i) => `
+                                    <tr style="color: ${i === 0 ? '#ffd700' : '#aaa'};">
+                                        <td>${i + 1}.</td>
+                                        <td>${s.score} pts</td>
+                                        <td>${s.mode || 'Normal'}</td>
+                                        <td style="text-align: right;">${s.date}</td>
+                                    </tr>
+                                `).join('')}
+                            </table>
+                        </div>
+                    ` : ''}
                 </div>
             `;
+        }
+
+        function setSurvivalMode(enabled) {
+            survivalMode = enabled;
+            renderStartScreen();
+        }
+
+        function showCalendar() {
+            const currentMonth = new Date().getMonth();
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">📅 Michigan Foraging Calendar</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 25px;">Best times to find each species in Southeast Michigan</p>
+                    
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; min-width: 600px; font-size: 0.8rem; border-collapse: collapse;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.1);">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.2);">Species</th>
+                                    ${monthNames.map((m, i) => `
+                                        <th style="padding: 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.2); ${i === currentMonth ? 'background: rgba(118,184,82,0.3);' : ''}">${m}</th>
+                                    `).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${mushrooms.filter(m => m.answer === 'edible' || m.answer === 'medicinal').map(m => {
+                                    const seasons = m.season || getDefaultSeason(m.name);
+                                    return `
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                                <strong>${m.name}</strong>
+                                                <span style="color: ${m.answer === 'edible' ? '#76b852' : '#9c27b0'}; font-size: 0.7rem; margin-left: 5px;">${m.answer === 'edible' ? '✓' : '💊'}</span>
+                                            </td>
+                                            ${monthNames.map((_, i) => `
+                                                <td style="padding: 5px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); ${i === currentMonth ? 'background: rgba(118,184,82,0.1);' : ''}">
+                                                    ${seasons.includes(i + 1) ? '🍄' : '·'}
+                                                </td>
+                                            `).join('')}
+                                        </tr>
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 20px;">
+                        <p style="color: #76b852; margin-bottom: 15px;">Current month highlighted • ✓ = Edible • 💊 = Medicinal only</p>
+                        <button class="next-btn" onclick="renderStartScreen()">← Back to Game</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getDefaultSeason(name) {
+            // Default seasons for mushrooms without explicit season data
+            const seasons = {
+                'Morel': [4, 5],
+                'Destroying Angel': [6, 7, 8, 9],
+                'Chicken of the Woods': [8, 9, 10],
+                'Jack O\'Lantern': [9, 10],
+                'Giant Puffball': [8, 9, 10],
+                'False Morel': [4, 5],
+                'Chanterelle': [6, 7, 8, 9],
+                'Fly Agaric': [8, 9, 10],
+                'Hen of the Woods': [9, 10],
+                'Death Cap': [8, 9, 10],
+                'Oyster Mushroom': [4, 5, 10, 11],
+                'Lion\'s Mane': [8, 9, 10],
+                'Earthball': [7, 8, 9, 10],
+                'Reishi': [6, 7, 8, 9, 10],
+                'Shaggy Mane': [9, 10, 11],
+                'Turkey Tail': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            };
+            return seasons[name] || [6, 7, 8, 9, 10];
         }
 
         function setDifficulty(diff) {
@@ -601,6 +824,7 @@
             score = 0;
             streak = 0;
             questionsAnswered = 0;
+            gameOver = false;
             renderQuestion();
         }
 
@@ -658,6 +882,7 @@
         function checkAnswer(answer) {
             const m = shuffledMushrooms[currentMushroom];
             const isCorrect = answer === m.answer;
+            const ateFatal = !isCorrect && m.answer === 'deadly';
             
             // Disable buttons
             document.querySelectorAll('.choice-btn').forEach(btn => {
@@ -678,12 +903,32 @@
             }
             questionsAnswered++;
 
+            // Check for survival mode death
+            if (survivalMode && ateFatal) {
+                gameOver = true;
+                const resultDiv = document.getElementById('result');
+                resultDiv.className = `result-card show wrong`;
+                resultDiv.innerHTML = `
+                    <div class="result-title" style="font-size: 2rem;">☠️ YOU DIED ☠️</div>
+                    <p style="font-size: 1.1rem; margin: 15px 0;">You ate a ${m.name} - it was <strong>DEADLY</strong>!</p>
+                    <p style="color: #ff6b6b; font-style: italic;">"In the forest, there are old foragers and bold foragers, but no old, bold foragers."</p>
+                    <div class="fun-fact">
+                        <h4>🍄 What killed you</h4>
+                        <p>${m.funFact}</p>
+                    </div>
+                    <p style="margin-top: 20px; color: #888;">Final Score: <strong style="color: #76b852; font-size: 1.3rem;">${score}</strong> points</p>
+                    <button class="next-btn" style="background: linear-gradient(90deg, #f44336, #d32f2f);" onclick="renderStartScreen()">Try Again (Don't eat that!) 💀</button>
+                `;
+                saveHighScore(score, 'Survival ☠️');
+                return;
+            }
+
             // Show result
             const resultDiv = document.getElementById('result');
             resultDiv.className = `result-card show ${isCorrect ? 'correct' : 'wrong'}`;
             resultDiv.innerHTML = `
                 <div class="result-title">${isCorrect ? '✅ Correct!' : '❌ Wrong!'}</div>
-                <p>${isCorrect ? 'Great identification!' : `This is actually ${m.answer === 'deadly' ? 'DEADLY ☠️' : m.answer}.`}</p>
+                <p>${isCorrect ? 'Great identification!' : `This is actually ${m.answer === 'deadly' ? 'DEADLY ☠️ - you would have died!' : m.answer}.`}</p>
                 <div class="fun-fact">
                     <h4>🍄 Forager's Note</h4>
                     <p>${m.funFact}</p>
@@ -724,16 +969,26 @@
                 gradeEmoji = "☠️";
             }
 
+            // Save high score
+            saveHighScore(score, survivalMode ? 'Survival 🏆' : 'Normal');
+
             document.getElementById('app').innerHTML = `
                 <div class="game-card game-over">
                     <h2>Hunt Complete! ${gradeEmoji}</h2>
                     <div class="final-score">${score}</div>
-                    <p style="color: #888; margin-bottom: 20px;">points</p>
+                    <p style="color: #888; margin-bottom: 20px;">points${survivalMode ? ' (Survival Mode!)' : ''}</p>
                     
                     <div class="grade">
                         <div class="grade-title">${grade}</div>
                         <p style="color: #888;">${percentage}% accuracy</p>
                     </div>
+
+                    ${survivalMode ? `
+                        <div style="background: rgba(76, 175, 80, 0.2); border: 1px solid rgba(76, 175, 80, 0.4); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #76b852;">🎉 Survival Bonus!</h4>
+                            <p>You completed survival mode without eating anything deadly!</p>
+                        </div>
+                    ` : ''}
 
                     <div class="warning-box" style="margin-bottom: 30px;">
                         <h4>Remember!</h4>
