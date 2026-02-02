@@ -185,6 +185,30 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        @keyframes confetti {
+            0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            top: -10px;
+            animation: confetti 3s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .timer-urgent {
+            animation: timerPulse 0.5s infinite;
+            color: #f44336 !important;
+        }
+
         .result-card.correct {
             background: rgba(76, 175, 80, 0.2);
             border: 1px solid rgba(76, 175, 80, 0.4);
@@ -798,10 +822,12 @@
 
                     <h3 style="margin: 25px 0 15px;">Game Mode</h3>
                     <div class="difficulty-select">
-                        <button class="difficulty-btn ${!survivalMode ? 'active' : ''}" onclick="setSurvivalMode(false)">🎮 Normal</button>
-                        <button class="difficulty-btn ${survivalMode ? 'active' : ''}" onclick="setSurvivalMode(true)">☠️ Survival</button>
+                        <button class="difficulty-btn ${!survivalMode && !speedMode ? 'active' : ''}" onclick="setGameMode('normal')">🎮 Normal</button>
+                        <button class="difficulty-btn ${survivalMode && !speedMode ? 'active' : ''}" onclick="setGameMode('survival')">☠️ Survival</button>
+                        <button class="difficulty-btn ${speedMode ? 'active' : ''}" onclick="setGameMode('speed')">⚡ Speed</button>
                     </div>
-                    ${survivalMode ? '<p style="color: #ff6b6b; font-size: 0.9rem; margin-top: 10px;">Survival: Misidentify a DEADLY mushroom = Game Over!</p>' : ''}
+                    ${survivalMode && !speedMode ? '<p style="color: #ff6b6b; font-size: 0.9rem; margin-top: 10px;">Survival: Misidentify a DEADLY mushroom = Game Over!</p>' : ''}
+                    ${speedMode ? '<p style="color: #ffd700; font-size: 0.9rem; margin-top: 10px;">Speed: 10 seconds per question! ⚡</p>' : ''}
 
                     <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
                         <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
@@ -841,6 +867,12 @@
 
         function setSurvivalMode(enabled) {
             survivalMode = enabled;
+            renderStartScreen();
+        }
+
+        function setGameMode(mode) {
+            survivalMode = mode === 'survival';
+            speedMode = mode === 'speed';
             renderStartScreen();
         }
 
@@ -933,6 +965,7 @@
 
         // Render question
         function renderQuestion() {
+            stopTimer(); // Clear any existing timer
             const m = shuffledMushrooms[currentMushroom];
             const progress = ((currentMushroom) / shuffledMushrooms.length) * 100;
             
@@ -950,6 +983,12 @@
                         <div class="stat-value">${currentMushroom + 1}/${shuffledMushrooms.length}</div>
                         <div class="stat-label">Question</div>
                     </div>
+                    ${speedMode ? `
+                        <div class="stat">
+                            <div class="stat-value" id="speed-timer">⏱️ 10s</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                    ` : ''}
                 </div>
 
                 <div class="progress-bar">
@@ -979,10 +1018,16 @@
                     <div id="result" class="result-card"></div>
                 </div>
             `;
+            
+            // Start timer in speed mode
+            if (speedMode) {
+                startTimer();
+            }
         }
 
         // Check answer
         function checkAnswer(answer) {
+            stopTimer(); // Stop speed mode timer
             const m = shuffledMushrooms[currentMushroom];
             const isCorrect = answer === m.answer;
             const ateFatal = !isCorrect && m.answer === 'deadly';
@@ -1106,6 +1151,11 @@
             // Check for new achievements
             const newAchievements = checkAchievements();
             
+            // Confetti for achievements or high scores
+            if (newAchievements.length > 0 || percentage >= 80) {
+                setTimeout(createConfetti, 100);
+            }
+            
             // Mark daily complete if this was daily challenge
             if (shuffledMushrooms === getDailyChallenge()) {
                 markDailyComplete(score);
@@ -1146,9 +1196,94 @@
                         </div>
                     ` : ''}
 
-                    <button class="play-again-btn" onclick="renderStartScreen()">Hunt Again 🍄</button>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="play-again-btn" onclick="renderStartScreen()">Hunt Again 🍄</button>
+                        <button class="difficulty-btn" onclick="shareScore(${score}, '${survivalMode ? 'Survival' : speedMode ? 'Speed' : 'Normal'}')">📤 Share Score</button>
+                    </div>
                 </div>
             `;
+        }
+
+        // Confetti effect
+        function createConfetti() {
+            const colors = ['#76b852', '#ffd700', '#ff6b6b', '#4ecdc4', '#9c27b0', '#ff9800'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 30);
+            }
+        }
+
+        // Share score
+        function shareScore(score, mode) {
+            const date = new Date().toLocaleDateString();
+            const emoji = score >= 100 ? '🏆' : score >= 80 ? '🌟' : score >= 50 ? '🍄' : '🌱';
+            const text = `${emoji} Mushroom Hunter ${mode}\n` +
+                        `Score: ${score} points\n` +
+                        `Date: ${date}\n\n` +
+                        `Can you beat my score? 🍄\n` +
+                        `https://wmiddendorff.github.io/mushroom-hunter/`;
+            
+            if (navigator.share) {
+                navigator.share({ text }).catch(() => copyToClipboard(text));
+            } else {
+                copyToClipboard(text);
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Score copied to clipboard! 📋');
+            }).catch(() => {
+                alert('Share: ' + text);
+            });
+        }
+
+        // Speed Round mode
+        let speedMode = false;
+        let timeLeft = 0;
+        let timerInterval = null;
+
+        function startTimer() {
+            timeLeft = 10; // 10 seconds per question in speed mode
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    // Auto-wrong if time runs out
+                    autoWrongAnswer();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const timerEl = document.getElementById('speed-timer');
+            if (timerEl) {
+                timerEl.textContent = `⏱️ ${timeLeft}s`;
+                timerEl.className = timeLeft <= 3 ? 'timer-urgent' : '';
+            }
+        }
+
+        function autoWrongAnswer() {
+            // Pick a random wrong answer
+            const m = shuffledMushrooms[currentMushroom];
+            const wrongAnswers = ['edible', 'poisonous', 'deadly', 'medicinal'].filter(a => a !== m.answer);
+            checkAnswer(wrongAnswers[0]);
         }
 
         // Keyboard controls
