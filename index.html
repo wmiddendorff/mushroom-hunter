@@ -934,8 +934,12 @@
                         <button class="difficulty-btn" onclick="showCalendar()">📅 Calendar</button>
                         <button class="difficulty-btn" onclick="showStudyMode()">📚 Study</button>
                         <button class="difficulty-btn" onclick="showLookalikes()">⚠️ Lookalikes</button>
-                        <button class="difficulty-btn" onclick="showAchievements()">🏆 Achievements</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap;">
+                        <button class="difficulty-btn" onclick="showMichiganMap()">🗺️ MI Map</button>
+                        <button class="difficulty-btn" onclick="showAchievements()">🏆 Stats</button>
                         <button class="difficulty-btn" onclick="showForagingTips()">💡 Tips</button>
+                        <button class="difficulty-btn" onclick="showGlobalLeaderboard()">🌍 Leaderboard</button>
                     </div>
                     
                     <p style="color: #666; font-size: 0.8rem; margin-top: 15px;">Keyboard: 1-4 to answer, Enter for next, Esc for menu</p>
@@ -1332,6 +1336,73 @@
             }
         }
 
+        // Global leaderboard simulation (for fun!)
+        const fakeLeaderboard = [
+            { name: 'MorelMaster_MI', score: 156, mode: 'Survival' },
+            { name: 'ForageQueen', score: 142, mode: 'Speed' },
+            { name: 'FungalFred', score: 128, mode: 'Survival' },
+            { name: 'ShroomHunter42', score: 118, mode: 'Normal' },
+            { name: 'MycologyMike', score: 112, mode: 'Speed' },
+            { name: 'WildWanda', score: 104, mode: 'Survival' },
+            { name: 'SporeSeeker', score: 98, mode: 'Normal' },
+            { name: 'NatureNed', score: 94, mode: 'Speed' },
+            { name: 'TreeHugger99', score: 88, mode: 'Normal' },
+            { name: 'MushroomMama', score: 82, mode: 'Survival' }
+        ];
+
+        function showGlobalLeaderboard() {
+            const stats = getStats();
+            const myBest = stats.highScore || 0;
+            
+            // Insert player into leaderboard
+            let allScores = [...fakeLeaderboard];
+            if (myBest > 0) {
+                allScores.push({ name: 'YOU 🎮', score: myBest, mode: 'Best', isPlayer: true });
+            }
+            allScores.sort((a, b) => b.score - a.score);
+            allScores = allScores.slice(0, 15);
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">🌍 Global Leaderboard</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 20px;">Top Mushroom Hunters Worldwide</p>
+                    
+                    <div style="max-width: 400px; margin: 0 auto;">
+                        ${allScores.map((entry, i) => `
+                            <div style="display: flex; align-items: center; padding: 12px; 
+                                        background: ${entry.isPlayer ? 'rgba(118,184,82,0.2)' : 'rgba(255,255,255,0.03)'}; 
+                                        border-radius: 8px; margin-bottom: 8px;
+                                        border: ${entry.isPlayer ? '2px solid #76b852' : 'none'};">
+                                <div style="width: 40px; text-align: center; font-weight: bold; 
+                                            color: ${i < 3 ? ['#ffd700', '#c0c0c0', '#cd7f32'][i] : '#888'};">
+                                    ${i < 3 ? ['🥇', '🥈', '🥉'][i] : `#${i + 1}`}
+                                </div>
+                                <div style="flex: 1; font-weight: ${entry.isPlayer ? 'bold' : 'normal'};">
+                                    ${entry.name}
+                                </div>
+                                <div style="color: #76b852; font-weight: bold; margin-right: 10px;">
+                                    ${entry.score}
+                                </div>
+                                <div style="color: #888; font-size: 0.8rem;">
+                                    ${entry.mode}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    ${myBest === 0 ? `
+                        <p style="text-align: center; color: #888; margin-top: 20px;">
+                            Play a game to appear on the leaderboard!
+                        </p>
+                    ` : ''}
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button class="next-btn" onclick="renderStartScreen()">← Back</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
                 alert('Score copied to clipboard! 📋');
@@ -1659,6 +1730,76 @@
                     </div>
                     
                     <div style="text-align: center;">
+                        <button class="next-btn" onclick="renderStartScreen()">← Back</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showMichiganMap() {
+            const regions = {
+                'Upper Peninsula': {
+                    terrain: 'Boreal forests, conifer-heavy, rocky',
+                    bestFor: ['Chanterelle', 'Black Trumpet', 'Lobster Mushroom'],
+                    season: 'Shorter season, July-Sept peak',
+                    tip: 'Look in hemlock and birch stands. Less competition from other foragers!'
+                },
+                'Northern Lower Peninsula': {
+                    terrain: 'Mixed hardwood/conifer, sandy soils',
+                    bestFor: ['Morel', 'Chicken of the Woods', 'Chanterelle'],
+                    season: 'Morels Apr-May, Chanterelles July-Sept',
+                    tip: 'Morel heaven! Focus on burned areas and dying ash trees.'
+                },
+                'Central Michigan': {
+                    terrain: 'Oak-hickory forests, agricultural edges',
+                    bestFor: ['Hen of the Woods', 'Morel', 'Giant Puffball'],
+                    season: 'Spring and fall best',
+                    tip: 'Check oak tree bases in fall for massive Hen of the Woods.'
+                },
+                'Southeast Michigan': {
+                    terrain: 'Fragmented forests, urban parks',
+                    bestFor: ['Oyster Mushroom', 'Shaggy Mane', 'Dryad\'s Saddle'],
+                    season: 'Year-round in mild winters',
+                    tip: 'Metro parks and nature preserves. Oysters on dead elms!'
+                },
+                'Southwest Michigan': {
+                    terrain: 'Dune forests, beech-maple',
+                    bestFor: ['Lion\'s Mane', 'Beefsteak Fungus', 'Black Trumpet'],
+                    season: 'Late summer through fall',
+                    tip: 'Beech trees = Lion\'s Mane territory. Check dune forests!'
+                }
+            };
+
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 10px;">🗺️ Michigan Foraging Map</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 25px;">Where to find mushrooms across the Great Lakes State</p>
+                    
+                    <div style="display: grid; gap: 15px;">
+                        ${Object.entries(regions).map(([name, info]) => `
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px;">
+                                <h3 style="color: #76b852; margin-bottom: 10px;">📍 ${name}</h3>
+                                <div style="display: grid; gap: 8px; font-size: 0.9rem;">
+                                    <div><strong>🌲 Terrain:</strong> ${info.terrain}</div>
+                                    <div><strong>🍄 Best Species:</strong> ${info.bestFor.join(', ')}</div>
+                                    <div><strong>📅 Season:</strong> ${info.season}</div>
+                                    <div style="color: #ffd700;"><strong>💡 Tip:</strong> ${info.tip}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: rgba(76,175,80,0.2); border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <h4 style="color: #76b852; margin-bottom: 8px;">🌡️ Weather Sweet Spots</h4>
+                        <ul style="color: #ccc; font-size: 0.9rem; padding-left: 20px; line-height: 1.8;">
+                            <li><strong>Morels:</strong> Soil temp 50°F+, 2-3 days after warm rain</li>
+                            <li><strong>Chanterelles:</strong> 70-80°F, after summer thunderstorms</li>
+                            <li><strong>Hen of Woods:</strong> First cool nights of fall (50°F)</li>
+                            <li><strong>Oysters:</strong> After first frost, 40-50°F range</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
                         <button class="next-btn" onclick="renderStartScreen()">← Back</button>
                     </div>
                 </div>
