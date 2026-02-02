@@ -654,6 +654,94 @@
                 funFact: "One of the largest and most elegant mushrooms! Cap can be breaded and fried like a schnitzel. The moveable ring is a key ID feature. Warning: has dangerous lookalikes in the Chlorophyllum genus that cause severe illness!",
                 difficulty: 2,
                 season: [7, 8, 9, 10]
+            },
+            {
+                name: "Pear-shaped Puffball",
+                scientific: "Apioperdon pyriforme",
+                emoji: "🍐",
+                appearance: "Small pear-shaped, white to tan, clustered on wood, tiny spines when young",
+                habitat: "On dead logs and stumps in clusters, summer to fall",
+                answer: "edible",
+                funFact: "Unlike Giant Puffballs which grow from soil, these always grow on wood! Named for their pear shape. Same rule applies: only eat when interior is pure white. Often found in large clusters of dozens.",
+                difficulty: 2,
+                season: [7, 8, 9, 10]
+            },
+            {
+                name: "Witch's Butter",
+                scientific: "Tremella mesenterica",
+                emoji: "🧈",
+                appearance: "Bright yellow-orange, gelatinous, brain-like lobed mass",
+                habitat: "On dead hardwood branches, year-round especially after rain",
+                answer: "edible",
+                funFact: "According to European folklore, if witch's butter appeared on your door, you'd been cursed! It's actually edible but flavorless - used in Asian soups for texture. It's not actually a decomposer - it parasitizes other fungi!",
+                difficulty: 2,
+                season: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+            },
+            {
+                name: "Chaga",
+                scientific: "Inonotus obliquus",
+                emoji: "⬛",
+                appearance: "Black, charcoal-like conk growing on birch trees, orange-brown inside",
+                habitat: "Exclusively on birch trees, year-round",
+                answer: "medicinal",
+                funFact: "Called 'Black Gold' of the forest! Used for centuries in Siberian folk medicine. Not technically a mushroom - it's a sterile mass of mycelium. Sustainable harvesting is crucial as it takes 15-20 years to form. Extremely high in antioxidants.",
+                difficulty: 2,
+                season: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+            },
+            {
+                name: "Green-spored Parasol",
+                scientific: "Chlorophyllum molybdites",
+                emoji: "🤢",
+                appearance: "Similar to Parasol but with GREEN spore print, large white cap with brown scales",
+                habitat: "Lawns, parks, grassy areas, summer to fall",
+                answer: "poisonous",
+                funFact: "The most commonly consumed poisonous mushroom in North America! Looks like the edible Parasol but has GREEN spores. Causes severe vomiting and diarrhea. ALWAYS do a spore print on large lawn mushrooms!",
+                difficulty: 3,
+                season: [6, 7, 8, 9]
+            },
+            {
+                name: "Dryad's Saddle",
+                scientific: "Cerioporus squamosus",
+                emoji: "🍄",
+                appearance: "Large bracket with dark brown scales on cream background, smells like watermelon rind",
+                habitat: "On dying hardwoods, especially box elder and elm, spring",
+                answer: "edible",
+                funFact: "Named because its saddle-shape could seat a wood nymph (dryad)! Only edible when young and tender - gets woody fast. Has a distinctive watermelon rind smell. One of the first polypores to appear in spring.",
+                difficulty: 2,
+                season: [3, 4, 5, 6]
+            },
+            {
+                name: "Artist's Conk",
+                scientific: "Ganoderma applanatum",
+                emoji: "🎨",
+                appearance: "Large woody bracket, brown top with white pore surface that bruises brown when touched",
+                habitat: "On dead and dying hardwoods, perennial",
+                answer: "medicinal",
+                funFact: "The white pore surface permanently stains brown when scratched - artists use this to create drawings! Related to Reishi. Too woody to eat but used medicinally. Can live for decades, adding a new layer each year.",
+                difficulty: 2,
+                season: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+            },
+            {
+                name: "Candy Cap",
+                scientific: "Lactarius rubidus",
+                emoji: "🍬",
+                appearance: "Small reddish-brown cap, fragile, exudes milk when cut, distinct maple syrup smell when dried",
+                habitat: "Under oaks and conifers, fall to winter",
+                answer: "edible",
+                funFact: "Smells exactly like maple syrup! Used to flavor desserts - cookies, ice cream, even candy. The maple aroma intensifies when dried. A prized gourmet species. Found mainly on West Coast but some Michigan relatives exist.",
+                difficulty: 3,
+                season: [10, 11, 0, 1]
+            },
+            {
+                name: "Blue-staining Bolete",
+                scientific: "Gyroporus cyanescens",
+                emoji: "💙",
+                appearance: "Pale tan cap and stem, instantly stains intense blue when cut or bruised",
+                habitat: "Under oaks and conifers in sandy soil, summer to fall",
+                answer: "edible",
+                funFact: "The dramatic blue staining is caused by oxidation of pulvinic acid! Despite the alarming color change, it's perfectly edible. Don't confuse with other bluing boletes - some are toxic. Check for no red pores (red = danger in boletes).",
+                difficulty: 3,
+                season: [7, 8, 9]
             }
         ];
 
@@ -679,7 +767,7 @@
             { id: 'morel_master', name: 'Morel Master', desc: 'Play during morel season (Apr-May)', icon: '👑', check: () => [3,4].includes(new Date().getMonth()) },
             { id: 'night_owl', name: 'Night Owl', desc: 'Play after 10pm', icon: '🦉', check: () => new Date().getHours() >= 22 },
             { id: 'early_bird', name: 'Early Bird', desc: 'Play before 7am', icon: '🐦', check: () => new Date().getHours() < 7 },
-            { id: 'scholar', name: 'Scholar', desc: 'View all mushrooms in Study Guide', icon: '📚', check: (stats) => stats.mushroomsViewed >= 24 },
+            { id: 'scholar', name: 'Scholar', desc: 'View all mushrooms in Study Guide', icon: '📚', check: (stats) => stats.mushroomsViewed >= 32 },
             { id: 'centurion', name: 'Centurion', desc: 'Score over 100 points', icon: '🏆', check: (stats) => stats.highScore >= 100 },
             { id: 'veteran', name: 'Veteran', desc: 'Play 10 games', icon: '🎖️', check: (stats) => stats.gamesPlayed >= 10 },
         ];
@@ -1789,6 +1877,89 @@
             if ('vibrate' in navigator) {
                 navigator.vibrate(pattern);
             }
+        }
+
+        // ========= EASTER EGGS =========
+        
+        // Konami Code: ↑↑↓↓←→←→BA unlocks "Psychedelic Mode"
+        let konamiCode = [];
+        const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'KeyB', 'KeyA'];
+        
+        document.addEventListener('keydown', (e) => {
+            konamiCode.push(e.code);
+            konamiCode = konamiCode.slice(-10);
+            
+            if (konamiCode.join(',') === konamiSequence.join(',')) {
+                activatePsychedelicMode();
+            }
+        });
+        
+        function activatePsychedelicMode() {
+            playSound('achievement');
+            createConfetti();
+            document.body.style.animation = 'rainbow 2s infinite';
+            
+            // Add rainbow animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes rainbow {
+                    0% { filter: hue-rotate(0deg); }
+                    100% { filter: hue-rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Show secret mushroom discovery
+            alert('🍄✨ SECRET UNLOCKED: Psychedelic Mode! ✨🍄\n\nYou found the Konami Code Easter egg!\n\nFun fact: Psilocybin mushrooms have been used for thousands of years in spiritual ceremonies. Modern research shows promise for treating depression and PTSD.\n\n(This is just a visual effect, not an endorsement!)');
+        }
+        
+        // Secret: Click the title 7 times for "Expert Mode"
+        let titleClicks = 0;
+        document.querySelector('header h1')?.addEventListener('click', () => {
+            titleClicks++;
+            if (titleClicks === 7) {
+                alert('🧙 EXPERT MODE UNLOCKED!\n\nAll mushrooms now available at max difficulty!\n\n"Every expert was once a beginner"\n- Helen Hayes');
+                difficulty = 3;
+                renderStartScreen();
+            }
+        });
+        
+        // Secret: Type "fungus" anywhere to get a fun fact
+        let typedChars = '';
+        document.addEventListener('keypress', (e) => {
+            typedChars += e.key.toLowerCase();
+            typedChars = typedChars.slice(-10);
+            
+            if (typedChars.includes('fungus')) {
+                typedChars = '';
+                showFungusFact();
+            }
+        });
+        
+        function showFungusFact() {
+            const funFacts = [
+                "🍄 The largest organism on Earth is a honey fungus in Oregon spanning 2,385 acres!",
+                "🌳 90% of plants depend on mycorrhizal fungi for nutrient absorption!",
+                "🧠 Some fungi can control ant brains - the 'zombie ant' fungus!",
+                "🔬 Penicillin comes from a fungus - it's saved over 200 million lives!",
+                "🌍 There are an estimated 3.8 million fungal species, but only 120,000 are described!",
+                "💀 The Death Cap is responsible for over 90% of mushroom fatalities worldwide!",
+                "🦠 Fungi are more closely related to animals than to plants!",
+                "🍕 Yeast is a fungus - no fungi, no bread or beer!",
+                "🌲 A single mushroom can release 16 BILLION spores!",
+                "🔥 Some fungi glow in the dark - it's called bioluminescence!"
+            ];
+            alert(funFacts[Math.floor(Math.random() * funFacts.length)]);
+        }
+        
+        // Birthday Easter egg
+        const today = new Date();
+        if (today.getMonth() === 3 && today.getDate() === 22) { // Earth Day
+            console.log('🌍 Happy Earth Day! Thank you for learning about fungi!');
+        }
+        if (today.getMonth() === 8 && today.getDate() === 15) { // National Mushroom Day
+            console.log('🍄 Happy National Mushroom Day!');
+            setTimeout(() => alert('🍄 Happy National Mushroom Day! (September 15)\n\nGo find some mushrooms today!'), 1000);
         }
     </script>
 </body>
