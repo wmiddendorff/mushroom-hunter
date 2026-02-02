@@ -1,0 +1,20 @@
+{
+  "name": "Mushroom Hunter",
+  "short_name": "Mushroom Hunter",
+  "description": "Michigan mushroom identification game - Learn to forage safely!",
+  "start_url": "/mushroom-hunter/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#76b852",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍄</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "education"],
+  "lang": "en-US"
+}
