@@ -638,6 +638,96 @@
         let survivalMode = false;
         let gameOver = false;
 
+        // Achievements System
+        const achievementDefs = [
+            { id: 'first_hunt', name: 'First Hunt', desc: 'Complete your first game', icon: '🌱', check: (stats) => stats.gamesPlayed >= 1 },
+            { id: 'survivor', name: 'Survivor', desc: 'Complete Survival Mode without dying', icon: '💪', check: (stats) => stats.survivalWins >= 1 },
+            { id: 'perfect_10', name: 'Perfect 10', desc: 'Score 100% on 10 questions', icon: '💯', check: (stats) => stats.perfectGames >= 1 },
+            { id: 'streak_5', name: 'Hot Streak', desc: 'Get 5 correct answers in a row', icon: '🔥', check: (stats) => stats.maxStreak >= 5 },
+            { id: 'streak_10', name: 'On Fire', desc: 'Get 10 correct answers in a row', icon: '🔥🔥', check: (stats) => stats.maxStreak >= 10 },
+            { id: 'deadly_expert', name: 'Death Defier', desc: 'Correctly identify all deadly mushrooms', icon: '💀', check: (stats) => stats.deadlyCorrect >= 3 },
+            { id: 'morel_master', name: 'Morel Master', desc: 'Play during morel season (Apr-May)', icon: '👑', check: () => [3,4].includes(new Date().getMonth()) },
+            { id: 'night_owl', name: 'Night Owl', desc: 'Play after 10pm', icon: '🦉', check: () => new Date().getHours() >= 22 },
+            { id: 'early_bird', name: 'Early Bird', desc: 'Play before 7am', icon: '🐦', check: () => new Date().getHours() < 7 },
+            { id: 'scholar', name: 'Scholar', desc: 'View all mushrooms in Study Guide', icon: '📚', check: (stats) => stats.mushroomsViewed >= 24 },
+            { id: 'centurion', name: 'Centurion', desc: 'Score over 100 points', icon: '🏆', check: (stats) => stats.highScore >= 100 },
+            { id: 'veteran', name: 'Veteran', desc: 'Play 10 games', icon: '🎖️', check: (stats) => stats.gamesPlayed >= 10 },
+        ];
+
+        function getStats() {
+            const stats = localStorage.getItem('mushroomHunterStats');
+            return stats ? JSON.parse(stats) : {
+                gamesPlayed: 0,
+                survivalWins: 0,
+                perfectGames: 0,
+                maxStreak: 0,
+                deadlyCorrect: 0,
+                mushroomsViewed: 0,
+                highScore: 0,
+                totalCorrect: 0,
+                totalQuestions: 0
+            };
+        }
+
+        function saveStats(stats) {
+            localStorage.setItem('mushroomHunterStats', JSON.stringify(stats));
+        }
+
+        function getAchievements() {
+            const achievements = localStorage.getItem('mushroomHunterAchievements');
+            return achievements ? JSON.parse(achievements) : [];
+        }
+
+        function checkAchievements() {
+            const stats = getStats();
+            const earned = getAchievements();
+            const newAchievements = [];
+            
+            achievementDefs.forEach(ach => {
+                if (!earned.includes(ach.id) && ach.check(stats)) {
+                    earned.push(ach.id);
+                    newAchievements.push(ach);
+                }
+            });
+            
+            localStorage.setItem('mushroomHunterAchievements', JSON.stringify(earned));
+            return newAchievements;
+        }
+
+        // Daily Challenge - same seed for everyone on same day
+        function getDailySeed() {
+            const today = new Date();
+            return today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+        }
+
+        function seededRandom(seed) {
+            const x = Math.sin(seed++) * 10000;
+            return x - Math.floor(x);
+        }
+
+        function getDailyChallenge() {
+            const seed = getDailySeed();
+            const shuffled = [...mushrooms];
+            
+            // Fisher-Yates with seeded random
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(seededRandom(seed + i) * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            return shuffled.slice(0, 10);
+        }
+
+        function hasDoneDailyToday() {
+            const lastDaily = localStorage.getItem('lastDailyChallenge');
+            return lastDaily === getDailySeed().toString();
+        }
+
+        function markDailyComplete(score) {
+            localStorage.setItem('lastDailyChallenge', getDailySeed().toString());
+            localStorage.setItem('lastDailyScore', score.toString());
+        }
+
         // High Scores
         function getHighScores() {
             const scores = localStorage.getItem('mushroomHunterScores');
@@ -713,12 +803,19 @@
                     </div>
                     ${survivalMode ? '<p style="color: #ff6b6b; font-size: 0.9rem; margin-top: 10px;">Survival: Misidentify a DEADLY mushroom = Game Over!</p>' : ''}
 
-                    <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <button class="play-again-btn" onclick="startGame()">Start Foraging! 🍄</button>
+                        <button class="play-again-btn" style="background: linear-gradient(90deg, #9c27b0, #7b1fa2);" onclick="startDailyChallenge()">
+                            📆 Daily Challenge ${hasDoneDailyToday() ? '✓' : ''}
+                        </button>
+                    </div>
                     
                     <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
                         <button class="difficulty-btn" onclick="showCalendar()">📅 Calendar</button>
                         <button class="difficulty-btn" onclick="showStudyMode()">📚 Study</button>
                         <button class="difficulty-btn" onclick="showLookalikes()">⚠️ Lookalikes</button>
+                        <button class="difficulty-btn" onclick="showAchievements()">🏆 Achievements</button>
+                        <button class="difficulty-btn" onclick="showForagingTips()">💡 Tips</button>
                     </div>
                     
                     <p style="color: #666; font-size: 0.8rem; margin-top: 15px;">Keyboard: 1-4 to answer, Enter for next, Esc for menu</p>
@@ -900,13 +997,21 @@
                 }
             });
 
-            // Update score
+            // Update score and stats
+            const stats = getStats();
             if (isCorrect) {
                 streak++;
                 score += 10 + (streak * 2); // Bonus for streak
+                stats.totalCorrect++;
+                if (m.answer === 'deadly') {
+                    stats.deadlyCorrect = (stats.deadlyCorrect || 0) + 1;
+                }
             } else {
                 streak = 0;
             }
+            stats.maxStreak = Math.max(stats.maxStreak || 0, streak);
+            stats.totalQuestions++;
+            saveStats(stats);
             questionsAnswered++;
 
             // Play sound
@@ -984,8 +1089,27 @@
                 gradeEmoji = "☠️";
             }
 
-            // Save high score
+            // Save high score and update stats
             saveHighScore(score, survivalMode ? 'Survival 🏆' : 'Normal');
+            
+            const stats = getStats();
+            stats.gamesPlayed++;
+            stats.highScore = Math.max(stats.highScore || 0, score);
+            if (survivalMode) {
+                stats.survivalWins = (stats.survivalWins || 0) + 1;
+            }
+            if (percentage >= 100) {
+                stats.perfectGames = (stats.perfectGames || 0) + 1;
+            }
+            saveStats(stats);
+            
+            // Check for new achievements
+            const newAchievements = checkAchievements();
+            
+            // Mark daily complete if this was daily challenge
+            if (shuffledMushrooms === getDailyChallenge()) {
+                markDailyComplete(score);
+            }
 
             document.getElementById('app').innerHTML = `
                 <div class="game-card game-over">
@@ -1009,6 +1133,18 @@
                         <h4>Remember!</h4>
                         <p>When foraging in the wild: "When in doubt, throw it out!" Always consult an expert before eating wild mushrooms.</p>
                     </div>
+
+                    ${newAchievements.length > 0 ? `
+                        <div style="background: rgba(255,215,0,0.2); border: 1px solid rgba(255,215,0,0.4); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                            <h4 style="color: #ffd700; margin-bottom: 10px;">🎉 New Achievement${newAchievements.length > 1 ? 's' : ''} Unlocked!</h4>
+                            ${newAchievements.map(a => `
+                                <div style="display: flex; align-items: center; gap: 10px; margin: 5px 0;">
+                                    <span style="font-size: 1.5rem;">${a.icon}</span>
+                                    <span><strong>${a.name}</strong> - ${a.desc}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
 
                     <button class="play-again-btn" onclick="renderStartScreen()">Hunt Again 🍄</button>
                 </div>
@@ -1244,6 +1380,104 @@
             `;
         }
 
+        function startDailyChallenge() {
+            shuffledMushrooms = getDailyChallenge();
+            currentMushroom = 0;
+            score = 0;
+            streak = 0;
+            questionsAnswered = 0;
+            gameOver = false;
+            survivalMode = true; // Daily is always survival
+            renderQuestion();
+        }
+
+        function showAchievements() {
+            const earned = getAchievements();
+            const stats = getStats();
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">🏆 Achievements</h2>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        ${achievementDefs.map(ach => {
+                            const isEarned = earned.includes(ach.id);
+                            return `
+                                <div style="background: ${isEarned ? 'rgba(118,184,82,0.2)' : 'rgba(255,255,255,0.05)'}; 
+                                            border: 1px solid ${isEarned ? 'rgba(118,184,82,0.4)' : 'rgba(255,255,255,0.1)'};
+                                            border-radius: 10px; padding: 15px; text-align: center;
+                                            opacity: ${isEarned ? 1 : 0.5};">
+                                    <div style="font-size: 2rem; margin-bottom: 5px;">${ach.icon}</div>
+                                    <div style="font-weight: bold; color: ${isEarned ? '#76b852' : '#888'};">${ach.name}</div>
+                                    <div style="font-size: 0.8rem; color: #888;">${ach.desc}</div>
+                                    ${isEarned ? '<div style="color: #76b852; font-size: 0.8rem; margin-top: 5px;">✓ Unlocked</div>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                        <h3 style="margin-bottom: 10px;">📊 Your Stats</h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 0.9rem;">
+                            <div>Games Played: <strong>${stats.gamesPlayed}</strong></div>
+                            <div>High Score: <strong>${stats.highScore}</strong></div>
+                            <div>Survival Wins: <strong>${stats.survivalWins}</strong></div>
+                            <div>Max Streak: <strong>${stats.maxStreak}</strong></div>
+                            <div>Accuracy: <strong>${stats.totalQuestions > 0 ? Math.round(stats.totalCorrect / stats.totalQuestions * 100) : 0}%</strong></div>
+                            <div>Total Correct: <strong>${stats.totalCorrect}</strong></div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button class="next-btn" onclick="renderStartScreen()">← Back</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showForagingTips() {
+            const tips = [
+                { icon: '🧺', title: 'Basket vs Bag', tip: 'Use a mesh bag or basket to carry mushrooms - this allows spores to spread and helps mushrooms "breathe." Plastic bags cause them to deteriorate quickly.' },
+                { icon: '🔪', title: 'Cut, Don\'t Pull', tip: 'Cut mushrooms at the base with a knife rather than pulling. This preserves the mycelium network underground and allows future fruiting.' },
+                { icon: '📸', title: 'Document Everything', tip: 'Take photos of mushrooms in situ before picking: top, gills, stem, and surrounding habitat. Note the tree species nearby. This helps with later ID.' },
+                { icon: '🌧️', title: 'Best Conditions', tip: 'Mushrooms fruit 2-5 days after rain when temperatures are mild. Morning hunts in humid conditions are often most productive.' },
+                { icon: '🧪', title: 'Spore Prints', tip: 'Always do a spore print for ID: place cap gill-side down on paper overnight. Spore color is a key identification feature.' },
+                { icon: '🤢', title: 'The Universal Edibility Test is a MYTH', tip: 'There is NO reliable test to determine if a mushroom is safe. Cooking, silver spoons, and animal tests don\'t work. Only expert ID is safe.' },
+                { icon: '⏰', title: 'Timing is Everything', tip: 'Morels: April-May after warm rains. Chanterelles: July-September. Hen of Woods: September-October. Know your seasons!' },
+                { icon: '🌳', title: 'Tree Relationships', tip: 'Most prized edibles have specific tree partners. Morels love dying elms/ash. Chanterelles like oaks. Hen of Woods grows at oak bases.' },
+                { icon: '👥', title: 'Join a Club', tip: 'Michigan has excellent mycological societies. Join one! Learning from experienced foragers is the safest way to start. Never eat anything without expert confirmation.' },
+                { icon: '🚫', title: 'When in Doubt...', tip: '...THROW IT OUT. No mushroom is worth dying for. Even experienced foragers make mistakes. Always err on the side of caution.' },
+            ];
+            
+            document.getElementById('app').innerHTML = `
+                <div class="game-card">
+                    <h2 style="text-align: center; margin-bottom: 20px;">💡 Foraging Tips</h2>
+                    <p style="text-align: center; color: #888; margin-bottom: 25px;">Essential knowledge for safe mushroom hunting</p>
+                    
+                    <div style="display: grid; gap: 15px;">
+                        ${tips.map(tip => `
+                            <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; display: flex; gap: 15px; align-items: start;">
+                                <div style="font-size: 2rem; flex-shrink: 0;">${tip.icon}</div>
+                                <div>
+                                    <h4 style="color: #76b852; margin-bottom: 5px;">${tip.title}</h4>
+                                    <p style="color: #ccc; font-size: 0.9rem; line-height: 1.5;">${tip.tip}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: rgba(244,67,54,0.2); border: 1px solid rgba(244,67,54,0.4); border-radius: 10px; padding: 15px; margin-top: 20px; text-align: center;">
+                        <h4 style="color: #f44336;">⚠️ This is a Game</h4>
+                        <p style="color: #ddd; font-size: 0.9rem;">This game is for education and entertainment only. NEVER eat wild mushrooms without expert verification. Even slight misidentification can be fatal.</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button class="next-btn" onclick="renderStartScreen()">← Back</button>
+                    </div>
+                </div>
+            `;
+        }
+
         function showLookalikeDetail(index) {
             const pair = lookalikes[index];
             const safeMushroom = mushrooms.find(m => m.name === pair.safe);
@@ -1302,6 +1536,16 @@
         function showMushroomDetail(name) {
             const m = mushrooms.find(m => m.name === name);
             if (!m) return;
+            
+            // Track for Scholar achievement
+            const viewed = JSON.parse(localStorage.getItem('mushroomsViewed') || '[]');
+            if (!viewed.includes(name)) {
+                viewed.push(name);
+                localStorage.setItem('mushroomsViewed', JSON.stringify(viewed));
+                const stats = getStats();
+                stats.mushroomsViewed = viewed.length;
+                saveStats(stats);
+            }
             
             const categoryColors = {
                 'edible': '#76b852',
